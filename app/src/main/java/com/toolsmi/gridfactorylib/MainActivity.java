@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.toolsmi.gridfactory.GridLayoutFactory;
 
@@ -27,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         root = findViewById(R.id.root);
         gridLayoutFactory = new GridLayoutFactory(this, bindViewListener);
+        gridLayoutFactory.setOnItemClickListener(mItemClickListener);
         try {
             InputStream is = getAssets().open("gridlayout.config");
             List<Map<String, Object>> data = new ArrayList<>();
@@ -61,9 +63,33 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+    private GridLayoutFactory.OnItemClickListener mItemClickListener = new GridLayoutFactory.OnItemClickListener() {
+        @Override
+        public void onItemClick(String tag, View item, Object data) {
+            if ("test".equals(tag)) {
+                Toast.makeText(MainActivity.this, tag + "------" + item.getId(), Toast.LENGTH_SHORT).show();
+                switch (item.getId()) {
+                    case 0:
+                        break;
+                    case 3:
+                        break;
+                    case 5:
+                        break;
+                    case 6:
+                        break;
+                    case 7:
+                        break;
+                    case 8:
+                        break;
+                }
+            }
+        }
+    };
+
     private GridLayoutFactory.OnBindViewListener bindViewListener = new GridLayoutFactory.OnBindViewListener() {
         @Override
-        public void onBindView(View item, int layout, Object obj) {
+        public void onBindView(View item, int layout, Object obj, int id) {
             HashMap<String, Object> map = (HashMap<String, Object>) obj;
             switch (layout) {
                 case R.layout.layout_find_item:
@@ -72,6 +98,12 @@ public class MainActivity extends AppCompatActivity {
                 case R.layout.layout_grid_title:
                     TextView tv = item.findViewById(R.id.title);
                     tv.setText(map.get("title").toString());
+                    tv.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Toast.makeText(MainActivity.this, "--title-", Toast.LENGTH_SHORT).show();
+                        }
+                    });
                     break;
             }
         }

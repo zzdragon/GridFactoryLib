@@ -18,6 +18,7 @@ public class GridLayoutFactory {
     private Context mContext;
     private LayoutInflater mInflater;
     private OnBindViewListener mBindViewListener;
+    private OnItemClickListener mItemClickListener;
     private float mDensity;
 
     public GridLayoutFactory(@NonNull Context context, @NonNull OnBindViewListener bindViewListener) {
@@ -29,17 +30,18 @@ public class GridLayoutFactory {
 
     /**
      * @param config format
-     *               layout,rowCount,columnCount,rowSpace,columnSpace|layout,row,column,rowSpan,columnSpan,rowWeight,columnWeight;layout,row,column,rowSpan,columnSpan,rowWeight,columnWeight;...
+     *               tag|layout,rowCount,columnCount,rowSpace,columnSpace|layout,row,column,rowSpan,columnSpan,rowWeight,columnWeight;layout,row,column,rowSpan,columnSpan,rowWeight,columnWeight;...
      * @param data
      * @return
      */
     public GridLayout getView(@NonNull String config, @NonNull List data) {
         if (TextUtils.isEmpty(config)) return null;
-        if (!config.matches("\\S*,\\d+,\\d+,\\d+,\\d+\\|(\\S*,\\d+,\\d+,\\d+,\\d+,\\d+,\\d+;)*(\\S*,\\d+,\\d+,\\d+,\\d+,\\d+,\\d+)"))
+        if (!config.matches("\\S+\\|\\S*,\\d+,\\d+,\\d+,\\d+\\|(\\S*,\\d+,\\d+,\\d+,\\d+,\\d+,\\d+;)*(\\S*,\\d+,\\d+,\\d+,\\d+,\\d+,\\d+)"))
             throw new RuntimeException("配置信息错误");
         String[] parts = config.split("\\|");
-        String[] parentParams = parts[0].split(",");
-        parts = parts[1].split(";");
+        String tag = parts[0];
+        String[] parentParams = parts[1].split(",");
+        parts = parts[2].split(";");
         GridParent parent = new GridParent(getLayoutId(parentParams[0]), parentParams);
         List<GridItem> items = new ArrayList<>();
         String[] itemParams;
@@ -47,10 +49,12 @@ public class GridLayoutFactory {
             itemParams = itemPart.split(",");
             items.add(new GridItem(getLayoutId(itemParams[0]), itemParams));
         }
-        return generateView(parent, items, data);
+        GridLayout view = generateView(parent, items, data);
+        view.setTag(tag);
+        return view;
     }
 
-    public int getLayoutId(String name) {
+    private int getLayoutId(String name) {
         if (TextUtils.isEmpty(name)) return 0;
         return mContext.getResources().getIdentifier(name, "layout", mContext.getPackageName());
     }
@@ -94,7 +98,7 @@ public class GridLayoutFactory {
             if (layout == 0) {
                 throw new RuntimeException("generate view error：missing param 'layout’");
             }
-            View child = createView(layout, item, data.get(i));
+            View child = createView(layout, parent, item, data.get(i));
             if (child == null) continue;
             GridLayout.Spec columnSpec = GridLayout.spec(item.column, item.columnSpan, item.columnWeight);
             GridLayout.Spec rowSpec = GridLayout.spec(item.row, item.rowSpan, item.rowWeight);
@@ -112,13 +116,33 @@ public class GridLayoutFactory {
         return gridLayout;
     }
 
-    private View createView(int layout, GridItem item, Object obj) {
+    private View createView(int layout, GridParent parent, GridItem item, Object obj) {
         View child = mInflater.inflate(layout, null);
-        mBindViewListener.onBindView(child, layout, obj);
+        child.setId(item.row * parent.columnCount + item.column);
+        child.setOnClickListener(itemClick);
+        child.setTag(obj);
+        mBindViewListener.onBindView(child, layout, obj, child.getId());
         return child;
     }
 
+    public void setOnItemClickListener(OnItemClickListener clickListener) {
+        this.mItemClickListener = clickListener;
+    }
+
+    private View.OnClickListener itemClick = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (mItemClickListener != null) {
+                mItemClickListener.onItemClick(((View) v.getParent()).getTag().toString(), v, v.getTag());
+            }
+        }
+    };
+
     public interface OnBindViewListener {
-        void onBindView(View item, int layout, Object obj);
+        void onBindView(View item, int layout, Object obj, int id);
+    }
+
+    public interface OnItemClickListener {
+        void onItemClick(String tag, View item, Object data);
     }
 }
