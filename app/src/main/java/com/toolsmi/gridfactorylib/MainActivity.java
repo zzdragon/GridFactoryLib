@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
 
     private GridLayoutFactory.OnBindViewListener bindViewListener = new GridLayoutFactory.OnBindViewListener() {
         @Override
-        public void onBindView(View item, int layout, Object obj, int id) {
+        public void onBindView(String tag, View item, int layout, Object obj, int id) {
             HashMap<String, Object> map = (HashMap<String, Object>) obj;
             switch (layout) {
                 case R.layout.layout_find_item:

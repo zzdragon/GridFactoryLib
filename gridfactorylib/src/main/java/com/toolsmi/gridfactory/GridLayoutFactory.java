@@ -49,7 +49,7 @@ public class GridLayoutFactory {
             itemParams = itemPart.split(",");
             items.add(new GridItem(getLayoutId(itemParams[0]), itemParams));
         }
-        GridLayout view = generateView(parent, items, data);
+        GridLayout view = generateView(parent, items, data, tag);
         view.setTag(tag);
         return view;
     }
@@ -83,7 +83,7 @@ public class GridLayoutFactory {
         return null;
     }
 
-    private GridLayout generateView(GridParent parent, List<GridItem> items, List data) {
+    private GridLayout generateView(GridParent parent, List<GridItem> items, List data, String tag) {
         GridLayout gridLayout = new GridLayout(mContext);
         gridLayout.setLayoutParams(new LinearLayout.MarginLayoutParams(LinearLayout.MarginLayoutParams.MATCH_PARENT, LinearLayout.MarginLayoutParams.WRAP_CONTENT));
         gridLayout.setColumnCount(parent.columnCount);
@@ -98,7 +98,7 @@ public class GridLayoutFactory {
             if (layout == 0) {
                 throw new RuntimeException("generate view error：missing param 'layout’");
             }
-            View child = createView(layout, parent, item, data.get(i));
+            View child = createView(tag, layout, parent, item, data.get(i));
             if (child == null) continue;
             GridLayout.Spec columnSpec = GridLayout.spec(item.column, item.columnSpan, item.columnWeight);
             GridLayout.Spec rowSpec = GridLayout.spec(item.row, item.rowSpan, item.rowWeight);
@@ -116,12 +116,12 @@ public class GridLayoutFactory {
         return gridLayout;
     }
 
-    private View createView(int layout, GridParent parent, GridItem item, Object obj) {
+    private View createView(String tag, int layout, GridParent parent, GridItem item, Object obj) {
         View child = mInflater.inflate(layout, null);
         child.setId(item.row * parent.columnCount + item.column);
         child.setOnClickListener(itemClick);
         child.setTag(obj);
-        mBindViewListener.onBindView(child, layout, obj, child.getId());
+        mBindViewListener.onBindView(tag, child, layout, obj, child.getId());
         return child;
     }
 
@@ -139,7 +139,7 @@ public class GridLayoutFactory {
     };
 
     public interface OnBindViewListener {
-        void onBindView(View item, int layout, Object obj, int id);
+        void onBindView(String tag, View item, int layout, Object obj, int id);
     }
 
     public interface OnItemClickListener {
