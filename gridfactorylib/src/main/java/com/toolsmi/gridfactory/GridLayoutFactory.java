@@ -36,7 +36,7 @@ public class GridLayoutFactory {
      */
     public GridLayout getView(@NonNull String config, @NonNull List data) {
         if (TextUtils.isEmpty(config)) return null;
-        if (!config.matches("\\S+\\|\\S*,\\d+,\\d+,\\d+,\\d+\\|(\\S*,\\d+,\\d+,\\d+,\\d+,\\d+,\\d+;)*(\\S*,\\d+,\\d+,\\d+,\\d+,\\d+,\\d+)"))
+        if (!config.matches("\\S+\\|\\S*,\\d+,\\d+,\\d+,\\d+\\|(\\S*,\\d+,\\d+,\\d+,\\d+,(\\d(\\.\\d)?)+,(\\d(\\.\\d)?)+;)*(\\S*,\\d+,\\d+,\\d+,\\d+,(\\d(\\.\\d)?)+,(\\d(\\.\\d)?)+)"))
             throw new RuntimeException("配置信息错误");
         String[] parts = config.split("\\|");
         String tag = parts[0];
